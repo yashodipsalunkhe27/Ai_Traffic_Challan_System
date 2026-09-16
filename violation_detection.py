@@ -2,6 +2,7 @@ import os
 import base64
 import sqlite3
 import re
+from groq import RateLimitError
 
 from dotenv import load_dotenv
 
@@ -61,7 +62,7 @@ def detect_violation(image_path):
 
     response = client.chat.completions.create(
 
-        model="qwen/qwen3.6-27b",
+        model="qwen/qwen3.8-27b",
 
         max_tokens=300,
 
@@ -217,7 +218,7 @@ def detect_number_plate(image_path):
 
     response = client.chat.completions.create(
 
-        model="qwen/qwen3.6-27b",
+        model="qwen/qwen3.8-27b",
 
         max_tokens=400,
 
@@ -740,18 +741,19 @@ def get_confidence(image_path, violation):
     with open(image_path, "rb") as f:
         image_base64 = base64.b64encode(f.read()).decode("utf-8")
 
-    response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
-        max_tokens=20,
-        temperature=0,
-        reasoning_effort="none",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"""
+    try:
+        response = client.chat.completions.create(
+            model="qwen/qwen3.8-27b",
+            max_tokens=20,
+            temperature=0,
+            reasoning_effort="none",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"""
 Look at this traffic image.
 
 A model predicted the violation as: {violation}
@@ -762,17 +764,19 @@ image actually shows a "{violation}" violation?
 Return ONLY a single integer between 0 and 100.
 Do not explain. Do not add text. Do not use markdown.
 """
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
                         }
-                    }
-                ]
-            }
-        ]
-    )
+                    ]
+                }
+            ]
+        )
+    except RateLimitError:
+        return -1
 
     result = response.choices[0].message.content.strip()
 
@@ -782,7 +786,6 @@ Do not explain. Do not add text. Do not use markdown.
         return max(0, min(100, int(match.group())))
 
     return 50
-
 
 # =========================================================
 # PDF CHALLAN WITH QR CODE

@@ -994,8 +994,11 @@ if uploaded_file is not None:
             unsafe_allow_html=True
         )
 
-        st.progress(confidence / 100)
-        st.caption(f"{confidence}% confident this is a {violation} violation")
+        if confidence == -1:
+            st.info("Confidence score temporarily unavailable (AI service is busy). Try again shortly.")
+        else:
+            st.progress(confidence / 100)
+            st.caption(f"{confidence}% confident this is a {violation} violation")
 
        
         # =================================================
