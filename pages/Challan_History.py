@@ -34,6 +34,10 @@ df = pd.read_sql_query(
 
 conn.close()
 
+if not df.empty:
+    df['created_at'] = pd.to_datetime(df['created_at'])
+    df['created_at'] = df['created_at'].dt.strftime('%d %b %Y, %I:%M %p')
+
 if df.empty:
     st.info("No challans issued yet. Generate one from the main page.")
 else:
