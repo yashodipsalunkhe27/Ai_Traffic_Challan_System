@@ -122,7 +122,7 @@ Ai_Traffic_Challan_System/
 
 ## 🌐 Live Demo
 
-*(Add your Streamlit Community Cloud link here once deployed)*
+*(https://aitrafficchallansystem-wxmzfnaux4uurarcn46dl7.streamlit.app/)*
 
 ---
 
